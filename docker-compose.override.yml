@@ -1,0 +1,39 @@
+version: '3.4'
+
+services:
+  orderingapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - Logging__Console__FormatterName=Simple
+    ports:
+      - "8080:80"
+      - "1443:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/https:ro
+      - ${APPDATA}/.azure:/root/.azure 
+  paymentapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - Logging__Console__FormatterName=Simple
+    ports:
+      - "8081:80"
+      - "2443:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/https:ro
+      - ${APPDATA}/.azure:/root/.azure 
+  warehouseapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - Logging__Console__FormatterName=Simple
+    ports:
+      - "8082:80"
+      - "3443:443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/https:ro
+      - ${APPDATA}/.azure:/root/.azure 

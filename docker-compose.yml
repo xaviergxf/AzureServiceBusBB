@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  orderingapi:
+    image: ${DOCKER_REGISTRY-}orderingapi
+    build:
+      context: .
+      dockerfile: src/OrderingAPI/Dockerfile
+  paymentapi:
+    image: ${DOCKER_REGISTRY-}paymentapi
+    build:
+      context: .
+      dockerfile: src/PaymentAPI/Dockerfile
+  warehouseapi:
+    image: ${DOCKER_REGISTRY-}warehouseapi
+    build:
+      context: .
+      dockerfile: src/WarehouseAPI/Dockerfile
