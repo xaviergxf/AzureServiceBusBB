@@ -13,6 +13,9 @@ namespace OrderingAPI
         public CreditCardType CreditCardType { get; set; }
 
         [Required]
+        public string CreditCardCountry { get; init; } = default!;
+
+        [Required]
         public string CreditCardNumber { get; init; } = default!;
 
         public int CreditCardExpMonth { get; set; }

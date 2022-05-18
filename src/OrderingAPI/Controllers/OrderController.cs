@@ -30,6 +30,7 @@ namespace OrderingAPI.Controllers
                 order.OrderDate,
                 order.Items.Select(s => new OrderPlacedItem(s.ProductID, s.ProductName, s.Price, s.Quantity)).ToList(),
                 new OrderPlacedPaymentInfo(
+                    order.CreditCardCountry,
                     order.CreditCardType, 
                     order.CreditCardNumber, 
                     order.CreditCardExpMonth, 
@@ -40,7 +41,10 @@ namespace OrderingAPI.Controllers
 
             byte[] orderPlacedSerialized = JsonSerializer.SerializeToUtf8Bytes(orderPlaced);
             var orderSender = _serviceBusClient.CreateSender("order-placed");
-            await orderSender.SendMessageAsync(new ServiceBusMessage(orderPlacedSerialized), cancellationToken);
+            var serviceBusOrderPlacedMessage = new ServiceBusMessage(orderPlacedSerialized);
+            serviceBusOrderPlacedMessage.ApplicationProperties.Add("country", order.CreditCardCountry);
+
+            await orderSender.SendMessageAsync(serviceBusOrderPlacedMessage, cancellationToken);
 
             _logger.LogInformation("Sent Order #{orderId} placed to Service Bus", order.OrderID);
 

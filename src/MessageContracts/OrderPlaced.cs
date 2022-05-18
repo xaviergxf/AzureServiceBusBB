@@ -15,5 +15,5 @@ namespace MessageContracts
         int Quantity
     );
 
-    public record OrderPlacedPaymentInfo(CreditCardType CreditCardType, string CreditCardNumber, int CreditCardExpMonth, int CreditCardExpYear, int CreditCardCvc);
+    public record OrderPlacedPaymentInfo(string Country, CreditCardType CreditCardType, string CreditCardNumber, int CreditCardExpMonth, int CreditCardExpYear, int CreditCardCvc);
 }

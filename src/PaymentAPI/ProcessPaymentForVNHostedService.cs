@@ -4,13 +4,13 @@ using System.Text.Json;
 
 namespace PaymentAPI
 {
-    public class OrderPlacedHostedService : IHostedService
+    public class ProcessPaymentForVNHostedService : IHostedService
     {
         private readonly ServiceBusClient _serviceBusClient;
-        private readonly ILogger<OrderPlacedHostedService> _logger;
+        private readonly ILogger<ProcessPaymentForVNHostedService> _logger;
         private ServiceBusProcessor? _processor;
 
-        public OrderPlacedHostedService(ServiceBusClient serviceBusClient, ILogger<OrderPlacedHostedService> logger)
+        public ProcessPaymentForVNHostedService(ServiceBusClient serviceBusClient, ILogger<ProcessPaymentForVNHostedService> logger)
         {
             _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -18,7 +18,7 @@ namespace PaymentAPI
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _processor = _serviceBusClient.CreateProcessor("order-placed", "billing-api");
+            _processor = _serviceBusClient.CreateProcessor("order-placed", "billing-api-vn");
 
             _processor.ProcessMessageAsync += ProcessMessageAsync;
             _processor.ProcessErrorAsync += ProcessErrorAsync;
@@ -37,7 +37,7 @@ namespace PaymentAPI
         private async Task ProcessMessageAsync(ProcessMessageEventArgs arg)
         {
             var orderPlaced = arg.Message.Body.ToObjectFromJson<OrderPlaced>();
-            _logger.LogInformation("Received Order #{orderId} placed from Service Bus", orderPlaced.OrderID);
+            _logger.LogInformation("Received Order #{orderId} placed from Service Bus. Processing Vietnam Payment...", orderPlaced.OrderID);
 
             /*
                 var paymentInfo = orderPlaced.PaymentInfo;
@@ -53,7 +53,7 @@ namespace PaymentAPI
             var orderPayedSender = _serviceBusClient.CreateSender("order-paid");
             await orderPayedSender.SendMessageAsync(new ServiceBusMessage(billOrderSerialized), cancellationToken);
 
-            _logger.LogInformation("Sent Order #{orderId} paid to Service Bus", orderPlaced.OrderID);
+            _logger.LogInformation("Payment processing for Vietnam is done. Sent Order #{orderId} paid to Service Bus", orderPlaced.OrderID);
         }
 
         public Task? StopAsync(CancellationToken cancellationToken)

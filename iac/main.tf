@@ -32,10 +32,32 @@ resource "azurerm_servicebus_topic" "sb-topic-order-placed" {
   requires_duplicate_detection = true
 }
 
-resource "azurerm_servicebus_subscription" "sb-topic-order-placed-sub" {
-  name               = "billing-api"
+//Billing subscription for Switzerland
+resource "azurerm_servicebus_subscription" "sb-topic-order-placed-sub-billing-ch" {
+  name               = "billing-api-ch"
   topic_id           = azurerm_servicebus_topic.sb-topic-order-placed.id
-  max_delivery_count = 10
+  max_delivery_count = 10  
+}
+
+resource "azurerm_servicebus_subscription_rule" "sb-topic-order-placed-sub-rule-billing-ch" {
+  name            = "billing-api-ch-rule"
+  subscription_id = azurerm_servicebus_subscription.sb-topic-order-placed-sub-billing-ch.id
+  filter_type     = "SqlFilter"
+  sql_filter      = "country = 'ch'"
+}
+
+//Billing subscription for Vietnam
+resource "azurerm_servicebus_subscription" "sb-topic-order-placed-sub-billing-vn" {
+  name               = "billing-api-vn"
+  topic_id           = azurerm_servicebus_topic.sb-topic-order-placed.id
+  max_delivery_count = 10  
+}
+
+resource "azurerm_servicebus_subscription_rule" "sb-topic-order-placed-sub-rule-billing-vn" {
+  name            = "billing-api-ch-rule"
+  subscription_id = azurerm_servicebus_subscription.sb-topic-order-placed-sub-billing-vn.id
+  filter_type     = "SqlFilter"
+  sql_filter      = "country = 'vn'"
 }
 
 //Order Paid Topic and Subscription

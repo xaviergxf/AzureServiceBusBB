@@ -10,7 +10,8 @@ builder.Services.AddAzureClients(builder =>
 {
     builder.AddServiceBusClient(conf.GetConnectionString("ServiceBus"));
 });
-builder.Services.AddHostedService<OrderPlacedHostedService>();
+builder.Services.AddHostedService<ProcessPaymentForCHHostedService>();
+builder.Services.AddHostedService<ProcessPaymentForVNHostedService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
