@@ -15,5 +15,9 @@ namespace MessageContracts
         int Quantity
     );
 
-    public record OrderPlacedPaymentInfo(string Country, CreditCardType CreditCardType, string CreditCardNumber, int CreditCardExpMonth, int CreditCardExpYear, int CreditCardCvc);
+    public record CreditCardPaymentInfo(CreditCardType CreditCardType, string CreditCardNumber, int CreditCardExpMonth, int CreditCardExpYear, int CreditCardCvc);
+
+    public record BTCPaymentInfo(string publicBtcAddress);
+
+    public record OrderPlacedPaymentInfo(string PaymentType, CreditCardPaymentInfo? CreditCardPaymentInfo = null, BTCPaymentInfo? BTCPaymentInfo = null);
 }

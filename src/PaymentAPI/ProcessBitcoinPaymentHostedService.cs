@@ -4,13 +4,13 @@ using System.Text.Json;
 
 namespace PaymentAPI
 {
-    public class ProcessPaymentForCHHostedService : IHostedService
+    public class ProcessBitcoinPaymentHostedService : IHostedService
     {
         private readonly ServiceBusClient _serviceBusClient;
-        private readonly ILogger<ProcessPaymentForCHHostedService> _logger;
+        private readonly ILogger<ProcessBitcoinPaymentHostedService> _logger;
         private ServiceBusProcessor? _processor;
 
-        public ProcessPaymentForCHHostedService(ServiceBusClient serviceBusClient, ILogger<ProcessPaymentForCHHostedService> logger)
+        public ProcessBitcoinPaymentHostedService(ServiceBusClient serviceBusClient, ILogger<ProcessBitcoinPaymentHostedService> logger)
         {
             _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -18,26 +18,26 @@ namespace PaymentAPI
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _processor = _serviceBusClient.CreateProcessor("order-placed", "billing-api-ch");
+            _processor = _serviceBusClient.CreateProcessor("order-placed", "billing-api-btc");
 
             _processor.ProcessMessageAsync += ProcessMessageAsync;
             _processor.ProcessErrorAsync += ProcessErrorAsync;
 
             await _processor.StartProcessingAsync(cancellationToken);
 
-            _logger.LogInformation("Started listening for Order Placed messages");
+            _logger.LogInformation("Started listening for Order Placed messages to process bitcoin payments");
         }
 
         private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
         {
-            _logger.LogError(arg.Exception, "Failed to consume order placed event");
+            _logger.LogError(arg.Exception, "Failed to consume order placed event while processing bitcoin payments");
             return Task.CompletedTask;
         }
 
         private async Task ProcessMessageAsync(ProcessMessageEventArgs arg)
         {
             var orderPlaced = arg.Message.Body.ToObjectFromJson<OrderPlaced>();
-            _logger.LogInformation("Received Order #{orderId} placed from Service Bus. Processing Swiss Payment...", orderPlaced.OrderID);
+            _logger.LogInformation("Received Order #{orderId} placed from Service Bus. Processing BTC Payment...", orderPlaced.OrderID);
 
             /*
                 var paymentInfo = orderPlaced.PaymentInfo;
@@ -53,7 +53,7 @@ namespace PaymentAPI
             var orderPayedSender = _serviceBusClient.CreateSender("order-paid");
             await orderPayedSender.SendMessageAsync(new ServiceBusMessage(billOrderSerialized), cancellationToken);
 
-            _logger.LogInformation("Payment processing for Switzerland is done. Sent Order #{orderId} paid to Service Bus", orderPlaced.OrderID);
+            _logger.LogInformation("BTC Payment processing is done. Sent Order #{orderId} paid to Service Bus", orderPlaced.OrderID);
         }
 
         public Task? StopAsync(CancellationToken cancellationToken)

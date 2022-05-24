@@ -24,25 +24,27 @@ namespace OrderingAPI.Controllers
         public async Task<ActionResult> Post([FromBody] Order order, CancellationToken cancellationToken = default)
         {
             //Does its internal logic about ordering, like storing in its database.
+            OrderPlacedPaymentInfo paymentInfo = order.PaymentType switch
+            {
+                PaymentTypes.CreditCard => new OrderPlacedPaymentInfo(order.PaymentType,
+                    CreditCardPaymentInfo: new CreditCardPaymentInfo(order.CreditCardType, order.CreditCardNumber!, order.CreditCardExpMonth, order.CreditCardExpYear, order.CreditCardCvc)),
+                PaymentTypes.Bitcoin => new OrderPlacedPaymentInfo(order.PaymentType,
+                    BTCPaymentInfo: new BTCPaymentInfo(order.BTCPublicAddress!)),
+                _ => throw new NotImplementedException($"'{order.PaymentType}' payment type is not implemented")
+            };
+
             var orderPlaced = new OrderPlaced(
                 order.OrderID,
                 order.CustomerID,
                 order.OrderDate,
                 order.Items.Select(s => new OrderPlacedItem(s.ProductID, s.ProductName, s.Price, s.Quantity)).ToList(),
-                new OrderPlacedPaymentInfo(
-                    order.CreditCardCountry,
-                    order.CreditCardType, 
-                    order.CreditCardNumber, 
-                    order.CreditCardExpMonth, 
-                    order.CreditCardExpYear, 
-                    order.CreditCardCvc
-                )
+                paymentInfo
             );
 
             byte[] orderPlacedSerialized = JsonSerializer.SerializeToUtf8Bytes(orderPlaced);
             var orderSender = _serviceBusClient.CreateSender("order-placed");
             var serviceBusOrderPlacedMessage = new ServiceBusMessage(orderPlacedSerialized);
-            serviceBusOrderPlacedMessage.ApplicationProperties.Add("country", order.CreditCardCountry);
+            serviceBusOrderPlacedMessage.ApplicationProperties.Add("paymentType", order.PaymentType);
 
             await orderSender.SendMessageAsync(serviceBusOrderPlacedMessage, cancellationToken);
 
